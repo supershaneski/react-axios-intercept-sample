@@ -1,70 +1,130 @@
-# Getting Started with Create React App
+react-axios-intercept-sample
+==========================
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Available Scripts
+A simple react app that demonstrates how to handle common API operation using [axios](https://axios-http.com).
 
-In the project directory, you can run:
+We will be using [JSON Web Token](https://jwt.io)(JWT) scheme for request authentication. 
+However, the CRUD server is not included but can easily be recreated following the API configuration described below.
 
-### `npm start`
+Using axios [interceptors](https://axios-http.com/docs/interceptors), we will be handling these two situations:
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+* When the server is busy, send retry request using `exponential backoff`.
+* When the authToken expires, send `refreshToken` to get new tokens and resend the original request again.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
 
-### `npm test`
+## API Overview
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+| **Methods** | **Url**    | **Action**        |
+|-------------|------------|-------------------|
+| POST        | /login     | Sign In           |
+| POST        | /refresh   | Refresh AuthToken |
+| GET         | /list      | Get data          |
 
-### `npm run build`
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### `/login`
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Header
+```
+{
+    "x-api-key": "--your-api-key--"
+}
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+POST param
+```
+{
+    "id": "user",
+    "pwd": "password"
+}
+```
 
-### `npm run eject`
+Response
+```
+{
+    rtoken: "--refresh-token--",
+    token: "--auth-token--"
+}
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### `/refresh`
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+Header
+```
+{
+    "x-api-key": "--your-api-key--"
+}
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+POST param
+```
+{
+    "rtoken": "--refresh-token--"
+}
+```
 
-## Learn More
+Response
+```
+{
+    rtoken: "--new-refresh-token--",
+    token: "--new-auth-token--"
+}
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### `/list`
 
-### Code Splitting
+Header
+```
+{
+    "Authorization: "Bearer --auth-token--"
+}
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+Response
+```
+{
+    payload: "your-data"
+}
+```
 
-### Analyzing the Bundle Size
+## Operations
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+There are several buttons to simulate operations.
 
-### Making a Progressive Web App
+> Login will send user credentials and return the `authToken` and `refreshToken`.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+> Refresh will send the `refreshToken` and get fresh new tokens.
 
-### Advanced Configuration
+> GetData will fetch data from the server, using the `authToken` in the `Authorization` header.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
 
-### Deployment
+We will be using `x-api-key` header to authenticate login and refresh requests.
+The apikey can be found in the `.env` file for demo purposes only.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+The `refreshToken` will be stored in the localStorage while the `authToken` in the sessionStorage.
+You can store it any way you want.
 
-### `npm run build` fails to minify
+## Installation
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+* Clone the repository in your local directory.
+
+* Go to the project directory and install the required modules.
+
+~~~
+$ npm install
+~~~
+
+* Start the app
+
+~~~
+$ npm start
+~~~
+
+### Note
+
+> Some configurations are found in `.env` file like API baseURL.
+> Please edit the values using your actual settings.
+

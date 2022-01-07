@@ -11,3 +11,16 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+h4, p {
+  margin: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+
+  body {
+    background-color: #333;
+    color: #fff;
+  }
+
+}
